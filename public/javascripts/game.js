@@ -127,6 +127,9 @@ function controlPlayer() {
 function createMovingObj() {
   let obj;
   do {
+    if (obj !== undefined) {
+      obj.remove();
+    }
     obj = createSprite(random(width - 20), random(height - 20), 30, 30);
   } while (isOverlap(obj, movingObjs));
 
@@ -163,13 +166,13 @@ function checkOutbound() {
   for (let i = 0; i < numOfMovingObjs; i++) {
     let obj = movingObjs[i];
     // 檢查是否超出畫布邊界，是的話就移到另一側
-    if (obj.position.x > width) {
+    if (obj.position.x >= width) {
       obj.position.x = 0;
-    } else if (obj.position.x < 0) {
+    } else if (obj.position.x <= 0) {
       obj.position.x = width;
     }
 
-    // 檢查是否超出畫布邊界，是的話就移到另一側
+    // 檢查 player 和 movingObjs 是否碰撞
     if (player.overlap(obj)) {
       if (
         obj.shapeColor.levels[0] === targetColor.levels[0] &&
