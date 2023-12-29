@@ -9,6 +9,8 @@ let interval = 60;
 let gameStarted = false;
 let currentLevel = 1;
 let count = 3;
+let changeScorebar;
+let targetScore = 30; // 設定階段分數
 
 function startGame() {
   if (!gameStarted) {
@@ -25,13 +27,23 @@ function stopGame() {
 
 function preload() {
   backgroundImage = loadImage("assets/bgwithpeople.png");
-  player = createSprite(400, 250);
+  player = createSprite(400, 325);
   player.addImage("player", loadImage("assets/asterisk.png"));
   player.scale = 0.5;
+
+  //分數條底圖
+  scorebar = createSprite(400, 520);
+  scorebar.addImage("scorebarNoFill", loadImage("assets/scorebar-nofill.png"));
+  scorebar.addImage("scorebarFill", loadImage("assets/scorebar.png"));
+  scorebar.scale = 0.3;
+
+  //分數條
+  changeScorebar = createSprite(500, 530, 0, 20);
+  changeScorebar.shapeColor = "#ed8b8b";
 }
 
 function setup() {
-  createCanvas(800, 500);
+  createCanvas(800, 550);
 
   fixedColors = [
     color(255, 0, 0), // 红色
@@ -54,7 +66,7 @@ function setup() {
 
 function draw() {
   background("lightyellow");
-  image(backgroundImage, 0, 0, 800, 100);
+  image(backgroundImage, 0, 0, width, 130);
 
   // 計數轉換 00:00 的格式
   let minutes = Math.floor(timer / 60);
@@ -67,14 +79,14 @@ function draw() {
       // 根據關卡進行不同的處理
       if (timer === 60) {
         // 第一關結束，進入第二關
-        if (score < 3) {
+        if (score < targetScore) {
           endGame();
         }
         currentLevel++;
         startLevel(currentLevel);
       } else if (timer === 30) {
         // 第二關結束，進入第三關
-        if (score < 10) {
+        if (score < targetScore) {
           endGame();
         }
         currentLevel++;
@@ -99,20 +111,19 @@ function draw() {
 
     // 目標長框
     fill(targetColor);
-    rect(250, 90, 300, 15, 8, 8, 8, 8);
+    rect(250, 120, 300, 15, 8, 8, 8, 8);
 
     // 變換倒數顯示
     if (currentLevel > 1) {
       fill(255);
-      ellipse(400, 95, 40, 40);
+      ellipse(400, 125, 40, 40);
       fill(0);
-      text(count, 400, 95);
+      text(count, 400, 125);
     }
 
-    text("Score: " + score, 20, 60);
-
-    fill(targetColor);
-    rect(20, 80, 30, 30);
+    // 顯示 Score
+    fill(0);
+    text("Score: " + score, 700, 500);
 
     drawSprites();
   }
@@ -132,10 +143,12 @@ function changeCountdown() {
 function startLevel(level) {
   if (level === 2) {
     // 第二關，每 3 秒變換一次 target 顏色
+    targetScore = 100;
     setInterval(changeTargetColor, 3000);
     setTimeout(changeCountdown, 1000);
   } else if (level === 3) {
     // 第三關，整體移動速度變快 2 倍
+    targetScore = 300;
     for (let obj of movingObjs) {
       let speed = obj.getSpeed();
       obj.setSpeed(speed * 2);
@@ -167,11 +180,10 @@ function createMovingObj() {
     if (obj !== undefined) {
       obj.remove();
     }
-    obj = createSprite(random(width - 20), random(110, height - 20), 30, 30);
+    obj = createSprite(random(width - 20), random(150, height - 60), 30, 30);
   } while (isOverlap(obj, movingObjs));
 
   // 設定隨機顏色
-  //   obj.shapeColor = color(random(255), random(255), random(255));
   let randomColor = random(fixedColors);
   obj.shapeColor = randomColor;
 
@@ -221,6 +233,17 @@ function checkOutbound() {
         if (score > 0) {
           score -= 5; // 其他顏色，扣分
         }
+      }
+
+      //分數條變化
+      if (score < targetScore) {
+        scorebar.changeImage("scorebarNoFill");
+        changeScorebar.width = (score / targetScore) * 620;
+        changeScorebar.position.x = changeScorebar.width * 0.5 + 135;
+      } else if (score >= targetScore) {
+        scorebar.changeImage("scorebarFill"); // 分數條底圖在達到階段分數時為scorebarFill狀態
+        changeScorebar.width = 620;
+        changeScorebar.position.x = changeScorebar.width * 0.5 + 135;
       }
 
       obj.remove();
