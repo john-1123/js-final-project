@@ -6,9 +6,39 @@
     <script src="javascripts/shape5.js"></script>
     <script src="javascripts/p5.play.js"></script>
     <script src="javascripts/game.js"></script>
+    <style>
+      #container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      #canvas {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #button-groups {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 400px;
+      }
+      .btn {
+        height: 30px;
+        background-color: white;
+        border-radius: 10px;
+        margin: 5px;
+      }
+    </style>
   </head>
-  <body>
-    <button onclick="startGame()">Start Game</button>
-    <button onclick="stopGame()">Stop Game</button>
+  <body style="background-color: black">
+    <div id="container">
+      <div id="button-groups">
+        <button class="btn" onclick="startGame()">Start Game</button>
+        <button class="btn" onclick="stopGame()">Stop Game</button>
+      </div>
+      <div id="canvas"></div>
+    </div>
   </body>
 </html>

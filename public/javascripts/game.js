@@ -43,7 +43,8 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(800, 550);
+  const canvas = createCanvas(800, 550);
+  canvas.parent("canvas");
 
   fixedColors = [
     color(255, 0, 0), // 红色
@@ -65,7 +66,7 @@ function setup() {
 }
 
 function draw() {
-  background("lightyellow");
+  background("#EDEDED");
   image(backgroundImage, 0, 0, width, 130);
 
   // 計數轉換 00:00 的格式
