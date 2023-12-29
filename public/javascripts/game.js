@@ -13,7 +13,7 @@ let currentLevel = 1; // 當前遊戲階段
 let targetScore = 30; // 當前階段分數
 let count = 3; // 變色倒數計時器
 let gameStarted = false; // 遊戲是開始的?
-let chatWindows = [];
+let chatWindows = []; // 聊天視窗
 
 function startGame() {
   if (!gameStarted) {
@@ -69,7 +69,7 @@ function setup() {
   }
 
   // 建立聊天視窗
-  let current = 100;
+  let current = 90;
   let obj;
   for (let i = 0; i < 5; i++) {
     obj = createSprite(current, 40, 30, 30);
@@ -120,6 +120,11 @@ function draw() {
 
     // 移動 player
     controlPlayer();
+
+    // 檢查 player 和 movingObjs 碰撞
+    if (frameCount % 10 === 0) {
+      checkCollision();
+    }
 
     // 檢查超出 canvas
     checkOutbound();
@@ -185,7 +190,7 @@ function changeTargetIndex() {
   chatWindows[targetIndex].addImage(
     loadImage(`assets/d${targetIndex + 1}.png`)
   );
-  chatWindows[targetIndex].scale = 2;
+  chatWindows[targetIndex].scale = 2.5;
 }
 
 function controlPlayer() {
@@ -215,10 +220,7 @@ function createMovingObj() {
   let randomNum = floor(random(1, 6));
   obj.addImage(loadImage(`assets/${randomNum}.png`));
   obj.shapeColor = fixedColors[randomNum - 1];
-
-  // 設定隨機縮放
-  let scaleFactor = random(3, 3.5);
-  obj.scale *= scaleFactor;
+  obj.scale = 3;
 
   // 設定隨機速度
   if (random() > 0.5) {
@@ -239,15 +241,9 @@ function isOverlap(sprite, others) {
   return false;
 }
 
-function checkOutbound() {
+function checkCollision() {
   for (let i = 0; i < numOfMovingObjs; i++) {
     let obj = movingObjs[i];
-    // 檢查是否超出畫布邊界，是的話就移到另一側
-    if (obj.position.x >= width) {
-      obj.position.x = 0;
-    } else if (obj.position.x <= 0) {
-      obj.position.x = width;
-    }
 
     // 檢查 player 和 movingObjs 是否碰撞
     if (player.overlap(obj)) {
@@ -268,7 +264,7 @@ function checkOutbound() {
         scoreBackgroundImage.changeImage("scorebarNoFill");
         scorebar.width = (score / targetScore) * 620;
         scorebar.position.x = scorebar.width * 0.5 + 135;
-      } else if (score >= targetScore) {
+      } else {
         // 分數背景圖在達到階段分數時為scorebarFill狀態
         scoreBackgroundImage.changeImage("scorebarFill");
         scorebar.width = 620;
@@ -278,6 +274,18 @@ function checkOutbound() {
       obj.remove();
       movingObjs[i] = createMovingObj();
       break;
+    }
+  }
+}
+
+function checkOutbound() {
+  for (let i = 0; i < numOfMovingObjs; i++) {
+    let obj = movingObjs[i];
+    // 檢查是否超出畫布邊界，是的話就移到另一側
+    if (obj.position.x >= width) {
+      obj.position.x = 0;
+    } else if (obj.position.x <= 0) {
+      obj.position.x = width;
     }
   }
 }
