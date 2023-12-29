@@ -4,7 +4,7 @@ let player; // 玩家
 let movingObjs = []; // 移動物
 let numOfMovingObjs = 10; // 移動物數量
 let fixedColors = []; // 固定顏色(圖)
-let targetColor; // 目標顏色
+let targetIndex; // 目標顏色及聊天視窗的索引
 let timer = 90; // 遊戲時間90s
 let interval = 60; // 每秒60frame
 let score = 0; // 得分
@@ -13,6 +13,7 @@ let currentLevel = 1; // 當前遊戲階段
 let targetScore = 30; // 當前階段分數
 let count = 3; // 變色倒數計時器
 let gameStarted = false; // 遊戲是開始的?
+let chatWindows = [];
 
 function startGame() {
   if (!gameStarted) {
@@ -33,7 +34,7 @@ function preload() {
   player.addImage("player", loadImage("assets/asterisk.png"));
   player.scale = 0.5;
 
-  //分數條底圖
+  // 分數背景圖
   scoreBackgroundImage = createSprite(400, 520);
   scoreBackgroundImage.addImage(
     "scorebarNoFill",
@@ -45,7 +46,7 @@ function preload() {
   );
   scoreBackgroundImage.scale = 0.3;
 
-  //分數條
+  // 分數條
   scorebar = createSprite(500, 530, 0, 20);
   scorebar.shapeColor = "#ed8b8b";
 }
@@ -62,13 +63,26 @@ function setup() {
     color("#FFD541"),
   ];
 
-  // 選擇 Target Color
-  targetColor = random(fixedColors);
-
   // 建立移動物件
   for (let i = 0; i < numOfMovingObjs; i++) {
     movingObjs[i] = createMovingObj();
   }
+
+  // 建立聊天視窗
+  let current = 100;
+  let obj;
+  for (let i = 0; i < 5; i++) {
+    obj = createSprite(current, 40, 30, 30);
+    obj.shapeColor = color(0, 0, 0, 0); // 設成透明的
+    chatWindows.push(obj);
+    current += 100;
+    if (i == 2) {
+      current += 40;
+    }
+  }
+
+  // 選擇 targetIndex
+  changeTargetIndex();
 }
 
 function draw() {
@@ -117,7 +131,7 @@ function draw() {
     text(formattedCountdown, 400, 15);
 
     // 目標長框
-    fill(targetColor);
+    fill(fixedColors[targetIndex]);
     rect(250, 120, 300, 15, 8, 8, 8, 8);
 
     // 變換倒數顯示
@@ -151,7 +165,7 @@ function startLevel(level) {
   if (level === 2) {
     // 第二關，每 3 秒變換一次 target 顏色
     targetScore = 100;
-    setInterval(changeTargetColor, 3000);
+    setInterval(changeTargetIndex, 3000);
     setTimeout(changeCountdown, 1000);
   } else if (level === 3) {
     // 第三關，整體移動速度變快 2 倍
@@ -163,8 +177,15 @@ function startLevel(level) {
   }
 }
 
-function changeTargetColor() {
-  targetColor = random(fixedColors);
+function changeTargetIndex() {
+  if (targetIndex != undefined) {
+    chatWindows[targetIndex].scale = 0;
+  }
+  targetIndex = floor(random(1, 6)) - 1;
+  chatWindows[targetIndex].addImage(
+    loadImage(`assets/d${targetIndex + 1}.png`)
+  );
+  chatWindows[targetIndex].scale = 2;
 }
 
 function controlPlayer() {
@@ -231,9 +252,9 @@ function checkOutbound() {
     // 檢查 player 和 movingObjs 是否碰撞
     if (player.overlap(obj)) {
       if (
-        obj.shapeColor.levels[0] === targetColor.levels[0] &&
-        obj.shapeColor.levels[1] === targetColor.levels[1] &&
-        obj.shapeColor.levels[2] === targetColor.levels[2]
+        obj.shapeColor.levels[0] === fixedColors[targetIndex].levels[0] &&
+        obj.shapeColor.levels[1] === fixedColors[targetIndex].levels[1] &&
+        obj.shapeColor.levels[2] === fixedColors[targetIndex].levels[2]
       ) {
         score += 10; // 如果與目標顏色相同，加分
       } else {
