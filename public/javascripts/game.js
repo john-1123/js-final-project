@@ -1,16 +1,18 @@
-let player;
-let movingObjs = [];
-let numOfMovingObjs = 10;
-let fixedColors = [];
-let targetColor;
-let score = 0;
-let timer = 90;
-let interval = 60;
-let gameStarted = false;
-let currentLevel = 1;
-let count = 3;
-let changeScorebar;
-let targetScore = 30; // 設定階段分數
+let backgroundImage; // 教室背景圖
+let scoreBackgroundImage; // 分數背景圖
+let player; // 玩家
+let movingObjs = []; // 移動物
+let numOfMovingObjs = 10; // 移動物數量
+let fixedColors = []; // 固定顏色(圖)
+let targetColor; // 目標顏色
+let timer = 90; // 遊戲時間90s
+let interval = 60; // 每秒60frame
+let score = 0; // 得分
+let scorebar; // 分數條
+let currentLevel = 1; // 當前遊戲階段
+let targetScore = 30; // 當前階段分數
+let count = 3; // 變色倒數計時器
+let gameStarted = false; // 遊戲是開始的?
 
 function startGame() {
   if (!gameStarted) {
@@ -32,14 +34,20 @@ function preload() {
   player.scale = 0.5;
 
   //分數條底圖
-  scorebar = createSprite(400, 520);
-  scorebar.addImage("scorebarNoFill", loadImage("assets/scorebar-nofill.png"));
-  scorebar.addImage("scorebarFill", loadImage("assets/scorebar.png"));
-  scorebar.scale = 0.3;
+  scoreBackgroundImage = createSprite(400, 520);
+  scoreBackgroundImage.addImage(
+    "scorebarNoFill",
+    loadImage("assets/scorebar-nofill.png")
+  );
+  scoreBackgroundImage.addImage(
+    "scorebarFill",
+    loadImage("assets/scorebar.png")
+  );
+  scoreBackgroundImage.scale = 0.3;
 
   //分數條
-  changeScorebar = createSprite(500, 530, 0, 20);
-  changeScorebar.shapeColor = "#ed8b8b";
+  scorebar = createSprite(500, 530, 0, 20);
+  scorebar.shapeColor = "#ed8b8b";
 }
 
 function setup() {
@@ -47,13 +55,11 @@ function setup() {
   canvas.parent("canvas");
 
   fixedColors = [
-    color(255, 0, 0), // 红色
-    color(0, 255, 0), // 绿色
-    color(0, 0, 255), // 蓝色
-    color(255, 255, 0), // 黄色
-    color(255, 0, 255), // 洋红
-    color(0, 255, 255), // 青色
-    color(255, 165, 0), // 橙色
+    color("#EE6F50"),
+    color("#5A535C"),
+    color("#AD4044"),
+    color("#DCCEB9"),
+    color("#FFD541"),
   ];
 
   // 選擇 Target Color
@@ -184,14 +190,14 @@ function createMovingObj() {
     obj = createSprite(random(width - 20), random(150, height - 60), 30, 30);
   } while (isOverlap(obj, movingObjs));
 
-  // 設定隨機顏色
-  let randomColor = random(fixedColors);
-  obj.shapeColor = randomColor;
+  // 設定隨機目標及顏色
+  let randomNum = floor(random(1, 6));
+  obj.addImage(loadImage(`assets/${randomNum}.png`));
+  obj.shapeColor = fixedColors[randomNum - 1];
 
   // 設定隨機縮放
-  let scaleFactor = random(0.5, 1);
-  obj.width *= scaleFactor;
-  obj.height *= scaleFactor;
+  let scaleFactor = random(3, 3.5);
+  obj.scale *= scaleFactor;
 
   // 設定隨機速度
   if (random() > 0.5) {
@@ -236,15 +242,16 @@ function checkOutbound() {
         }
       }
 
-      //分數條變化
+      // 分數條變化
       if (score < targetScore) {
-        scorebar.changeImage("scorebarNoFill");
-        changeScorebar.width = (score / targetScore) * 620;
-        changeScorebar.position.x = changeScorebar.width * 0.5 + 135;
+        scoreBackgroundImage.changeImage("scorebarNoFill");
+        scorebar.width = (score / targetScore) * 620;
+        scorebar.position.x = scorebar.width * 0.5 + 135;
       } else if (score >= targetScore) {
-        scorebar.changeImage("scorebarFill"); // 分數條底圖在達到階段分數時為scorebarFill狀態
-        changeScorebar.width = 620;
-        changeScorebar.position.x = changeScorebar.width * 0.5 + 135;
+        // 分數背景圖在達到階段分數時為scorebarFill狀態
+        scoreBackgroundImage.changeImage("scorebarFill");
+        scorebar.width = 620;
+        scorebar.position.x = scorebar.width * 0.5 + 135;
       }
 
       obj.remove();
