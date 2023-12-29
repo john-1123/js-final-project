@@ -4,10 +4,11 @@ let numOfMovingObjs = 10;
 let fixedColors = [];
 let targetColor;
 let score = 0;
-let timer = 0;
+let timer = 90;
 let interval = 60;
 let gameStarted = false;
-let chageTimer;
+let currentLevel = 1;
+let count = 3;
 
 function startGame() {
   if (!gameStarted) {
@@ -23,6 +24,7 @@ function stopGame() {
 }
 
 function preload() {
+  backgroundImage = loadImage("assets/bgwithpeople.png");
   player = createSprite(400, 250);
   player.addImage("player", loadImage("assets/asterisk.png"));
   player.scale = 0.5;
@@ -52,25 +54,32 @@ function setup() {
 
 function draw() {
   background("lightyellow");
+  image(backgroundImage, 0, 0, 800, 100);
+
+  // 計數轉換 00:00 的格式
+  let minutes = Math.floor(timer / 60);
+  let seconds = timer % 60;
+  let formattedCountdown = nf(minutes, 2) + " : " + nf(seconds, 2);
 
   if (gameStarted) {
-    if (frameCount % interval === 0) {
-      timer++;
-
+    if (frameCount % interval === 0 && timer > 0) {
+      timer--;
       // 根據關卡進行不同的處理
-      if (timer === 30) {
+      if (timer === 60) {
         // 第一關結束，進入第二關
-        if (score < 30) {
+        if (score < 3) {
           endGame();
         }
-        startLevel(2);
-      } else if (timer === 60) {
+        currentLevel++;
+        startLevel(currentLevel);
+      } else if (timer === 30) {
         // 第二關結束，進入第三關
-        if (score < 100) {
+        if (score < 10) {
           endGame();
         }
-        startLevel(3);
-      } else if (timer === 90) {
+        currentLevel++;
+        startLevel(currentLevel);
+      } else if (timer === 0) {
         // 遊戲結束
         endGame();
       }
@@ -82,8 +91,24 @@ function draw() {
     // 檢查超出 canvas
     checkOutbound();
 
+    // 計時顯示
+    rect(350, 0, 100, 30, 8, 8, 8, 8);
     textSize(18);
-    text("Time: " + timer + " seconds", 20, 30);
+    textAlign(CENTER, CENTER);
+    text(formattedCountdown, 400, 15);
+
+    // 目標長框
+    fill(targetColor);
+    rect(250, 90, 300, 15, 8, 8, 8, 8);
+
+    // 變換倒數顯示
+    if (currentLevel > 1) {
+      fill(255);
+      ellipse(400, 95, 40, 40);
+      fill(0);
+      text(count, 400, 95);
+    }
+
     text("Score: " + score, 20, 60);
 
     fill(targetColor);
@@ -93,10 +118,22 @@ function draw() {
   }
 }
 
+function changeCountdown() {
+  if (count > 1) {
+    count--;
+    setTimeout(changeCountdown, 1000); // 每秒倒數一次
+  } else {
+    // 倒數結束後執行要做的事情
+    count = 3; // 重新設定倒數時間
+    setTimeout(changeCountdown, 1000); // 開始下一輪倒數
+  }
+}
+
 function startLevel(level) {
   if (level === 2) {
     // 第二關，每 3 秒變換一次 target 顏色
-    chageTimer = setInterval(changeTargetColor, 3000);
+    setInterval(changeTargetColor, 3000);
+    setTimeout(changeCountdown, 1000);
   } else if (level === 3) {
     // 第三關，整體移動速度變快 2 倍
     for (let obj of movingObjs) {
@@ -130,7 +167,7 @@ function createMovingObj() {
     if (obj !== undefined) {
       obj.remove();
     }
-    obj = createSprite(random(width - 20), random(height - 20), 30, 30);
+    obj = createSprite(random(width - 20), random(110, height - 20), 30, 30);
   } while (isOverlap(obj, movingObjs));
 
   // 設定隨機顏色
